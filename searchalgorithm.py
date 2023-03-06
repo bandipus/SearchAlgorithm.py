@@ -26,20 +26,16 @@ def expand(path, map):
             path_list (list): List of paths that are connected to the given path.
     """
     
-      
-    objective_station = path[-1]
-    objective_connections = map.connections[objective_station]
-    expanded_paths = []
+    path_list = []
+    connections = map.connections[path.last]
     
-    for node in objective_connections:
-        new_path = path.copy()
-        new_path.append(node)
-        expanded_paths.append(new_path)
+    for station in connections:
+        new_path = Path(list(path.route))
+        new_path.add_route(station)
+        path_list.append(new_path)
     
-    return expanded_paths
-        
-                          
-
+    return path_list
+    
 def remove_cycles(path_list):
     """
      It removes from path_list the set of paths that include some cycles in their path.
@@ -53,18 +49,19 @@ def remove_cycles(path_list):
     unique_values = []
     new_path_list = []
     
-    for paths in path_list:
-        for parades in paths:
-            if parades not in unique_values:
-                unique_values.append(parades)
+    for path in path_list:
+        iterable_list = list(path.route)
+        for stop in iterable_list:
+            if stop not in unique_values:
+                unique_values.append(stop)
             else:
                 break
-        if len(unique_values) == len(paths):
-            new_path_list.append(paths)
+        if len(unique_values) == len(iterable_list):
+            new_list = Path(iterable_list)
+            new_path_list.append(new_list)
         unique_values.clear()
-        
+    
     return new_path_list
-
 
 def insert_depth_first_search(expand_paths, list_of_path):
     """
@@ -77,12 +74,10 @@ def insert_depth_first_search(expand_paths, list_of_path):
             list_of_path (LIST of Path Class): List of Paths where Expanded Path is inserted
     """
     
-    expand_paths+=list_of_path
-    
-    """ INSEREIX PER DAVANT """
+    for paths in list_of_path:
+        expand_paths.append(paths)
     
     return expand_paths
-
 
 def depth_first_search(origin_id, destination_id, map):
     """
@@ -96,19 +91,21 @@ def depth_first_search(origin_id, destination_id, map):
             list_of_path[0] (Path Class): the route that goes from origin_id to destination_id
     """
     
-    llista = [[origin_id]];
+    origin = Path([origin_id])
     
-    while llista[0][-1] != destination_id or llista != None:
-        C = llista[0]
-        E = expand(C, map)
+    list_of_path = [origin]
+    
+    while list_of_path:
+        C = list_of_path.pop(0)
+        
+        if C.last == destination_id:
+            return C
+        
+        E = expand(C,map)
         E = remove_cycles(E)
-        llista = insert_depth_first_search(E, llista[1:])
-    
-    if (llista == None):
-        return llista[0]
-    else:
-        return "No existeix Solucio"
-
+        list_of_path = insert_depth_first_search(E, list_of_path)
+        
+    return "No existeix Solucio"
 
 def insert_breadth_first_search(expand_paths, list_of_path):
     """
@@ -121,12 +118,10 @@ def insert_breadth_first_search(expand_paths, list_of_path):
                list_of_path (LIST of Path Class): List of Paths where Expanded Path is inserted
     """
     
-    list_of_path+=expand_paths
-    
-    """" INSEREIX PER DARRERA """
+    for paths in expand_paths:
+        list_of_path.append(paths)
     
     return list_of_path
-
 
 def breadth_first_search(origin_id, destination_id, map):
     """
@@ -140,19 +135,21 @@ def breadth_first_search(origin_id, destination_id, map):
             list_of_path[0] (Path Class): The route that goes from origin_id to destination_id
     """
     
-    llista = [[origin_id]];
+    origin = Path([origin_id])
     
-    while llista[0][-1] != destination_id or llista != None:
-        C = llista[0]
-        E = expand(C, map)
+    list_of_path = [origin]
+    
+    while list_of_path:
+        C = list_of_path.pop(0)
+            
+        if C.last == destination_id:
+            return C
+        
+        E = expand(C,map)
         E = remove_cycles(E)
-        llista = insert_breath_first_search(E, llista[1:])
-    
-    if (llista == None):
-        return llista[0]
-    else:
-        return "No existeix Solucio" 
-
+        list_of_path = insert_breadth_first_search(E, list_of_path)
+        
+    return "No existeix Solucio"
 
 def calculate_cost(expand_paths, map, type_preference=0):
     """
@@ -277,8 +274,33 @@ def coord2station(coord, map):
         Returns:
             possible_origins (list): List of the Indexes of stations, which corresponds to the closest station
     """
-    pass
-
+    
+    station_coords = []
+    distances = []
+    possible_origins = []
+    
+    for id, station in map.stations.items():
+        x = station["x"]
+        y = station["y"]
+        station_coords.append([id,x,y])
+        
+    for i in range(len(station_coords)):
+        distance = euclidean_dist(coord, [station_coords[i][1],station_coords[i][2]])
+        distances.append([station_coords[i][0], distance])
+    
+    # Ordena les distancies de menor a major
+    sorted_distances = sorted(distances, key=lambda x: x[1])
+    
+    minimum_distance = sorted_distances[0][1]
+    i = 0
+    
+    while sorted_distances[i][1] == minimum_distance:
+        possible_origins.append(sorted_distances[i][0])
+        i += 1
+        
+    return possible_origins
+    
+        
 
 def Astar(origin_id, destination_id, map, type_preference=0):
     """
