@@ -166,6 +166,8 @@ def calculate_cost(expand_paths, map, type_preference=0):
             Returns:
                 expand_paths (LIST of Paths): Expanded path with updated cost
     """
+    
+    
     pass
 
 
@@ -299,8 +301,7 @@ def coord2station(coord, map):
         i += 1
         
     return possible_origins
-    
-        
+
 
 def Astar(origin_id, destination_id, map, type_preference=0):
     """
