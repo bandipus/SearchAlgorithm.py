@@ -201,8 +201,9 @@ def insert_cost(expand_paths, list_of_path):
            Returns:
                list_of_path (LIST of Path Class): List of Paths where expanded_path is inserted according to cost
     """
-    pass
-
+    list_of_path = list_of_path + expand_paths
+    sorted(list_of_path, key=lambda x: x.g)
+    return list_of_path
 
 def uniform_cost_search(origin_id, destination_id, map, type_preference=0):
     """
@@ -220,7 +221,23 @@ def uniform_cost_search(origin_id, destination_id, map, type_preference=0):
         Returns:
             list_of_path[0] (Path Class): The route that goes from origin_id to destination_id
     """
-    pass
+    
+    origin = Path([origin_id])
+    
+    list_of_path = [origin]
+    
+    while list_of_path:
+        C = list_of_path.pop(0)
+            
+        if C.last == destination_id:
+            return C
+        
+        E = expand(C,map)
+        E = remove_cycles(E)
+        E = calculate_cost(E,map,type_preference)
+        list_of_path = insert_cost(E, list_of_path)
+        
+    return "No existeix Solucio"
 
 
 def calculate_heuristics(expand_paths, map, destination_id, type_preference=0):
