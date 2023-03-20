@@ -167,9 +167,29 @@ def calculate_cost(expand_paths, map, type_preference=0):
                 expand_paths (LIST of Paths): Expanded path with updated cost
     """
     
-    
-    pass
+    for path in expand_paths:
+        if type_preference == 0:
+            path.update_g(len(path.route) - 1)
 
+        elif type_preference == 1:
+            new_station = path.last
+            last_station = path.penultimate
+            time = map.connections[last_station][new_station]
+            path.update_g(path.g + time)
+
+        elif type_preference == 2:
+            new_station = path.last
+            last_station = path.penultimate
+            distance = map.connections[last_station][new_station] * map.stations[last_station]['velocity']
+            path.update_g(path.g + distance)
+
+        elif type_preference == 3:
+            new_station_line = map.stations[path.last]['line']
+            last_station_line = map.stations[path.penultimate]['line']
+            if last_station_line != new_station_line:
+                path.update_g(path.g + 1)
+    
+    return expand_paths
 
 def insert_cost(expand_paths, list_of_path):
     """
