@@ -265,7 +265,35 @@ def calculate_heuristics(expand_paths, map, destination_id, type_preference=0):
         Returns:
             expand_paths (LIST of Path Class): Expanded paths with updated heuristics
     """
-    pass
+
+    for path in expand_paths:
+        if type_preference == 0:
+            if map.stations[path.last] != map.stations[destination_id]:
+                path.update_h(1)
+            else:
+                path.update_h(0)
+
+        elif type_preference == 1:
+            last_station = map.stations[path.last]
+            dest_station = map.stations[destination_id]
+            distance = math.sqrt((last_station['x'] - dest_station['x']) ** 2 + (last_station['y'] - dest_station['y']) ** 2)
+            maximum_velocity = max(map.velocity.values())
+            time = distance / maximum_velocity
+            path.update_h(time)
+
+        elif type_preference == 2:
+            last_station = map.stations[path.last]
+            dest_station = map.stations[destination_id]
+            distance = math.sqrt((last_station['x'] - dest_station['x']) ** 2 + (last_station['y'] - dest_station['y']) ** 2)
+            path.update_h(distance)
+
+        elif type_preference == 3:
+            if map.stations[path.last]['line'] != map.stations[destination_id]['line']:
+                path.update_h(1)
+            else:
+                path.update_h(0)
+
+    return expand_paths
 
 
 def update_f(expand_paths):
@@ -277,7 +305,10 @@ def update_f(expand_paths):
          Returns:
              expand_paths (LIST of Path Class): Expanded paths with updated costs
     """
-    pass
+    for path in expand_paths:
+        path.update_f()
+    
+    return expand_paths
 
 
 def remove_redundant_paths(expand_paths, list_of_path, visited_stations_cost):
@@ -307,7 +338,9 @@ def insert_cost_f(expand_paths, list_of_path):
            Returns:
                list_of_path (LIST of Path Class): List of Paths where expanded_path is inserted according to f
     """
-    pass
+    list_of_path = list_of_path + expand_paths
+    list_of_path.sort(key=lambda x: x.f)
+    return list_of_path
 
 
 def coord2station(coord, map):
