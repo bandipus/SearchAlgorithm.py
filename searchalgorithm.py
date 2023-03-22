@@ -325,7 +325,31 @@ def remove_redundant_paths(expand_paths, list_of_path, visited_stations_cost):
              list_of_path (LIST of Path Class): list_of_path without redundant paths
              visited_stations_cost (dict): Updated visited stations cost
     """
-    pass
+    
+    new_paths = []
+    for path in expand_paths:
+        # Get the current path's last station
+        current_station = path.last
+        # Check if the current station is already visited
+        if current_station in visited_stations_cost:
+            # Check if the current path has lower g-cost than the previous path
+            if path.g < visited_stations_cost[current_station]:
+                # Remove the previous path from the list_of_path
+                list_of_path.remove(Path([i for i in visited_stations_cost[current_station]['path']]))
+                # Remove the previous path from the new_paths
+                new_paths = [i for i in new_paths if i.route != visited_stations_cost[current_station]['path']]
+            else:
+                # Skip this path if it is not better than the previous one
+                continue
+
+        # Add the current path to the new_paths
+        new_paths.append(path)
+        # Add the current path to the list_of_path
+        list_of_path.append(path)
+        # Update the visited_stations_cost
+        visited_stations_cost[current_station] = {'cost': path.g, 'path': path.route}
+
+    return new_paths, list_of_path, visited_stations_cost
 
 
 def insert_cost_f(expand_paths, list_of_path):
