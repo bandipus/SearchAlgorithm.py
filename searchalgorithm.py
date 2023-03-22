@@ -8,7 +8,6 @@ __group__ = 'DM.18'
 # Universitat Autonoma de Barcelona
 # _______________________________________________________________________________________
 
-
 from SubwayMap import *
 from utils import *
 import os
@@ -173,22 +172,29 @@ def calculate_cost(expand_paths, map, type_preference=0):
             path.update_g(len(path.route) - 1)
 
         elif type_preference == 1:
-            new_station = path.last
-            last_station = path.penultimate
-            time = map.connections[last_station][new_station]
-            path.update_g(path.g + time)
+            list_of_path = path.route
+            for i in range(len(list_of_path) - 1):
+                new_station = list_of_path[i + 1]
+                last_station = list_of_path[i]
+                time = map.connections[last_station][new_station]
+                path.update_g(time)
 
         elif type_preference == 2:
-            new_station = path.last
-            last_station = path.penultimate
-            distance = map.connections[last_station][new_station] * map.stations[last_station]['velocity']
-            path.update_g(path.g + distance)
+            list_of_path = path.route
+            for i in range(len(list_of_path) - 1):
+                new_station = list_of_path[i + 1]
+                last_station = list_of_path[i]
+                if map.stations[last_station]['name'] != map.stations[new_station]['name']:
+                    distance = map.connections[last_station][new_station] * map.stations[last_station]['velocity']
+                    path.update_g(distance)
 
         elif type_preference == 3:
-            new_station_line = map.stations[path.last]['line']
-            last_station_line = map.stations[path.penultimate]['line']
-            if last_station_line != new_station_line:
-                path.update_g(path.g + 1)
+            list_of_path = path.route
+            for i in range(len(list_of_path) - 1):
+                new_station_line = map.stations[list_of_path[i + 1]]['line']
+                last_station_line = map.stations[list_of_path[i]]['line']
+                if last_station_line != new_station_line:
+                    path.update_g(1)
     
     return expand_paths
 
@@ -203,7 +209,7 @@ def insert_cost(expand_paths, list_of_path):
                list_of_path (LIST of Path Class): List of Paths where expanded_path is inserted according to cost
     """
     list_of_path = list_of_path + expand_paths
-    sorted(list_of_path, key=lambda x: x.g)
+    list_of_path.sort(key=lambda x: x.g)
     return list_of_path
 
 def uniform_cost_search(origin_id, destination_id, map, type_preference=0):
