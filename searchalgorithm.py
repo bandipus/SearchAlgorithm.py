@@ -246,7 +246,6 @@ def uniform_cost_search(origin_id, destination_id, map, type_preference=0):
         
     return "No existeix Solucio"
 
-
 def calculate_heuristics(expand_paths, map, destination_id, type_preference=0):
     """
      Calculate and UPDATE the heuristics of a path according to type preference
@@ -295,7 +294,6 @@ def calculate_heuristics(expand_paths, map, destination_id, type_preference=0):
 
     return expand_paths
 
-
 def update_f(expand_paths):
     """
       Update the f of a path
@@ -309,7 +307,6 @@ def update_f(expand_paths):
         path.update_f()
     
     return expand_paths
-
 
 def remove_redundant_paths(expand_paths, list_of_path, visited_stations_cost):
     """
@@ -325,32 +322,17 @@ def remove_redundant_paths(expand_paths, list_of_path, visited_stations_cost):
              list_of_path (LIST of Path Class): list_of_path without redundant paths
              visited_stations_cost (dict): Updated visited stations cost
     """
-    
     new_paths = []
     for path in expand_paths:
-        # Get the current path's last station
-        current_station = path.last
-        # Check if the current station is already visited
-        if current_station in visited_stations_cost:
-            # Check if the current path has lower g-cost than the previous path
-            if path.g < visited_stations_cost[current_station]:
-                # Remove the previous path from the list_of_path
-                list_of_path.remove(Path([i for i in visited_stations_cost[current_station]['path']]))
-                # Remove the previous path from the new_paths
-                new_paths = [i for i in new_paths if i.route != visited_stations_cost[current_station]['path']]
-            else:
-                # Skip this path if it is not better than the previous one
+        if path.last in visited_stations_cost:
+            if path.g >= visited_stations_cost[path.last]:
                 continue
+            visited_stations_cost[path.last] = path.g
+            new_paths.append(path)
 
-        # Add the current path to the new_paths
-        new_paths.append(path)
-        # Add the current path to the list_of_path
-        list_of_path.append(path)
-        # Update the visited_stations_cost
-        visited_stations_cost[current_station] = {'cost': path.g, 'path': path.route}
+            list_of_path = [p for p in list_of_path if path.last not in p.route]
 
     return new_paths, list_of_path, visited_stations_cost
-
 
 def insert_cost_f(expand_paths, list_of_path):
     """
@@ -365,7 +347,6 @@ def insert_cost_f(expand_paths, list_of_path):
     list_of_path = list_of_path + expand_paths
     list_of_path.sort(key=lambda x: x.f)
     return list_of_path
-
 
 def coord2station(coord, map):
     """
@@ -402,7 +383,6 @@ def coord2station(coord, map):
         i += 1
         
     return possible_origins
-
 
 def Astar(origin_id, destination_id, map, type_preference=0):
     """
