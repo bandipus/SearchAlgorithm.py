@@ -400,4 +400,24 @@ def Astar(origin_id, destination_id, map, type_preference=0):
         Returns:
             list_of_path[0] (Path Class): The route that goes from origin_id to destination_id
     """
-    pass
+    origin = Path([origin_id])
+    
+    list_of_path = [origin]
+
+    TCP = {}
+    
+    while list_of_path:
+        C = list_of_path.pop(0)
+            
+        if C.last == destination_id:
+            return C
+        
+        E = expand(C,map)
+        E = remove_cycles(E)
+        E = calculate_heuristics(E, map, destination_id, type_preference)
+        E = calculate_cost(E,map,type_preference)
+        update_f(E)
+        E,list_of_path,TCP = remove_redundant_paths(E,list_of_path,TCP)
+        list_of_path = insert_cost_f(E, list_of_path)
+        
+    return "No existeix Solucio"
