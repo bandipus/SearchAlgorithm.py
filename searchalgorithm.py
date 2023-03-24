@@ -328,9 +328,10 @@ def remove_redundant_paths(expand_paths, list_of_path, visited_stations_cost):
             if path.g >= visited_stations_cost[path.last]:
                 continue
             visited_stations_cost[path.last] = path.g
-            new_paths.append(path)
-
             list_of_path = [p for p in list_of_path if path.last not in p.route]
+        else:
+            visited_stations_cost[path.last] = path.g
+        new_paths.append(path)
 
     return new_paths, list_of_path, visited_stations_cost
 
@@ -421,3 +422,4 @@ def Astar(origin_id, destination_id, map, type_preference=0):
         list_of_path = insert_cost_f(E, list_of_path)
         
     return "No existeix Solucio"
+
