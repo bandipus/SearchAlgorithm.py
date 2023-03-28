@@ -423,3 +423,92 @@ def Astar(origin_id, destination_id, map, type_preference=0):
         
     return "No existeix Solucio"
 
+def Astar_multiple_origins(origin_coordinates, destination_id, map, type_preference=0):
+
+    possible_paths = []
+
+    if type_preference == 1: # A* for type_preference == 1 (time)
+        origin_ids_walking = Astar_improved(origin_coordinates, destination_id, map)
+
+        for origin_id in origin_ids_walking.keys():
+
+            origin = Path([origin_id])
+
+            origin.update_g(origin_ids_walking[origin_id])
+            origin.update_f()
+            
+            list_of_path = [origin]
+
+            TCP = {}
+            solution_flag = 0
+            
+            while list_of_path:
+                C = list_of_path.pop(0)
+                    
+                if C.last == destination_id:
+                    possible_paths.append(C)
+                    solution_flag = 1
+                    break
+                
+                E = expand(C,map)
+                E = remove_cycles(E)
+                E = calculate_heuristics(E, map, destination_id, type_preference)
+                E = calculate_cost(E,map,type_preference)
+                update_f(E)
+                E,list_of_path,TCP = remove_redundant_paths(E,list_of_path,TCP)
+                list_of_path = insert_cost_f(E, list_of_path)
+
+            if solution_flag == 0:
+                possible_paths.append("No existeix Solucio")
+
+    else: # A* for type_preference != 1, a normal A* comparing the paths generated from the coordinates
+        origin_ids  = coord2station(origin_coordinates, map)
+        
+        for origin_id in origin_ids:
+
+            origin = Path([origin_id])
+            
+            list_of_path = [origin]
+
+            TCP = {}
+            solution_flag = 0
+            
+            while list_of_path:
+                C = list_of_path.pop(0)
+                    
+                if C.last == destination_id:
+                    possible_paths.append(C)
+                    solution_flag = 1
+                    break
+                
+                E = expand(C,map)
+                E = remove_cycles(E)
+                E = calculate_heuristics(E, map, destination_id, type_preference)
+                E = calculate_cost(E,map,type_preference)
+                update_f(E)
+                E,list_of_path,TCP = remove_redundant_paths(E,list_of_path,TCP)
+                list_of_path = insert_cost_f(E, list_of_path)
+
+            if solution_flag == 0:
+                possible_paths.append("No existeix Solucio")
+
+    possible_paths.sort(key=lambda x: x.f)
+
+    return possible_paths[0]
+
+def Astar_improved(origin_coordinates, destination_id, map):
+
+    coordinates_dict = {}
+    human_vel = 5
+    origin_ids  = coord2station(origin_coordinates, map)
+    coord = map.stations[origin_ids[0]]["x"], map.stations[origin_ids[0]]["y"]
+    coord2 = map.stations[destination_id]["x"], map.stations[destination_id]["y"]
+    max_distance = euclidean_dist(coord, coord2)
+
+    for dif_coords in map.stations.keys():
+        coord3 = map.stations[dif_coords]["x"], map.stations[dif_coords]["y"]
+        distance = euclidean_dist(coord, coord3)
+        if distance <= max_distance:
+            coordinates_dict[dif_coords] = distance / human_vel
+    
+    return coordinates_dict
